@@ -20,8 +20,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 /**
- * @author xiaosuda
- * @date 2018/11/9
+ * 创建netty消息体（ Future<WebResponse> ）
  */
 public class WorkerHandleWebRequest {
 
@@ -84,6 +83,10 @@ public class WorkerHandleWebRequest {
                 .build(), workContext, "三个小时未获得master所有work信息");
     }
 
+
+    /**
+     * 创建 netty 消息体
+     */
     private static Future<WebResponse> buildMessage(WebRequest request, WorkContext workContext, String errorMsg) {
         CountDownLatch latch = new CountDownLatch(1);
         WorkResponseListener responseListener = new WorkResponseListener(request, false, latch, null);

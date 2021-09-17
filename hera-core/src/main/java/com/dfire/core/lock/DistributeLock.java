@@ -19,9 +19,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
- * @author: <a href="mailto:lingxiao@2dfire.com">凌霄</a>
- * @time: Created in 20:47 2018/1/10
- * @desc 基于数据库实现的分布式锁方案，后面优化成基于redis实现分布式锁
+ *  基于数据库实现的分布式锁方案，后面优化成基于redis实现分布式锁
  */
 @Component
 public class DistributeLock {
@@ -42,9 +40,6 @@ public class DistributeLock {
 
     @PostConstruct
     public void init() {
-
-
-
         workClient.workSchedule.scheduleAtFixedRate(this::checkLock, 10, 60, TimeUnit.SECONDS);
     }
 

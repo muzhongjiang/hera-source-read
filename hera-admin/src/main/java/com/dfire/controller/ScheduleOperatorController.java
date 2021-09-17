@@ -360,15 +360,23 @@ public class ScheduleOperatorController extends BaseHeraController {
     /**
      * 手动执行任务
      *
+     *
+     * 这部分的代码很简单，主要分为三部分
+     * 1.创建 hera_action_history 对象，向 mysql 插入任务的执行记录
+     * 2.通过 netty 向 master 发送任务执行的消息
+     * 3.添加任务执行记录
+     *
      * @param actionId
      * @return
      */
     @RequestMapping(value = "/manual", method = RequestMethod.GET)
     @ResponseBody
     @ApiOperation("手动执行接口")
-    public JsonResponse execute(@JsonSerialize(using = ToStringSerializer.class) @ApiParam(value = "版本id", required = true) Long actionId
-            , @ApiParam(value = "触发类型，2手动执行，3手动恢复，6超级恢复", required = true) Integer triggerType,
-                                @RequestParam(required = false) @ApiParam(value = "任务执行组", required = false) String execUser) throws InterruptedException, ExecutionException, HeraException, TimeoutException {
+    public JsonResponse execute(
+            @JsonSerialize(using = ToStringSerializer.class) @ApiParam(value = "版本id", required = true) Long actionId,
+            @ApiParam(value = "触发类型，2手动执行，3手动恢复，6超级恢复", required = true) Integer triggerType,
+            @RequestParam(required = false) @ApiParam(value = "任务执行组", required = false) String execUser
+    ) throws InterruptedException, ExecutionException, HeraException, TimeoutException {
         if (actionId == null) {
             return new JsonResponse(false, "请先生成版本再执行");
         }

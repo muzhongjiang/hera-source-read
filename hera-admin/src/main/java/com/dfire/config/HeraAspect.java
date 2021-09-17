@@ -32,8 +32,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 
 /**
- * @author xiaosuda
- * @date 2018/8/1
+ * 权限校验
  */
 @Aspect
 @Component

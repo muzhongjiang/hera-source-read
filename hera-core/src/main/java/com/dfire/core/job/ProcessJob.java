@@ -4,9 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.dfire.common.constants.Constants;
 import com.dfire.common.exception.HeraCaughtExceptionHandler;
 import com.dfire.common.exception.HeraException;
-import com.dfire.common.util.HierarchyProperties;
 import com.dfire.config.HeraGlobalEnv;
-import com.dfire.logs.ErrorLog;
 import com.dfire.logs.HeraLog;
 import com.dfire.logs.TaskLog;
 
@@ -18,9 +16,7 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 /**
- * @author: <a href="mailto:lingxiao@2dfire.com">凌霄</a>
- * @time: Created in 11:01 2018/3/23
- * @desc 通过操作系统创建进程Process的Job任务
+ *  通过操作系统创建进程Process的Job任务
  */
 public abstract class ProcessJob extends AbstractJob {
 
