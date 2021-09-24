@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 /**
- *  通过操作系统创建进程Process的Job任务
+ * 通过操作系统创建进程Process的Job任务
  */
 public abstract class ProcessJob extends AbstractJob {
 
@@ -153,12 +153,8 @@ public abstract class ProcessJob extends AbstractJob {
             try {
                 process.destroy();
                 int pid = getProcessId();
-                String st;
-                if (HeraGlobalEnv.isEmrJob()) {
-                    st = "kill -9 " + pid;
-                } else {
-                    st = "sudo sh -c \"cd; pstree " + pid + " -p | grep -o '([0-9]*)' | awk -F'[()]' '{print \\$2}' | xargs kill -9\"";
-                }
+                String st = "sudo sh -c \"cd; pstree " + pid + " -p | grep -o '([0-9]*)' | awk -F'[()]' '{print \\$2}' | xargs kill -9\"";
+
                 String[] commands = {"sh", "-c", st};
                 ProcessBuilder processBuilder = new ProcessBuilder(commands);
                 try {
@@ -186,7 +182,6 @@ public abstract class ProcessJob extends AbstractJob {
         }
         return processId;
     }
-
 
 
     /**

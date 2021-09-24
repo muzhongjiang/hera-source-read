@@ -575,13 +575,11 @@ public class Master {
 
     public void debug(HeraDebugHistoryVo debugHistory) {
         //如果是emr集群,开发中心任务直接在固定集群跑
-        boolean fixedEmr = HeraGlobalEnv.isEmrJob();
         JobElement element = JobElement.builder()
                 .jobId(debugHistory.getId())
                 .hostGroupId(debugHistory.getHostGroupId())
                 .historyId(debugHistory.getId())
                 .triggerType(TriggerTypeEnum.DEBUG)
-                .fixedEmr(fixedEmr)
                 .costMinute(0)
                 .build();
         debugHistory.setStatus(StatusEnum.RUNNING);
@@ -668,8 +666,6 @@ public class Master {
         heraJobHistory.getLog().append(ActionUtil.getTodayString() + " 进入任务队列");
         masterContext.getHeraJobHistoryService().update(BeanConvertUtils.convert(heraJobHistory));
 
-
-        boolean isFixed;
         int priorityLevel = 3;
         Map<String, String> configs = StringUtil.convertStringToMap(heraAction.getConfigs());
         String priorityLevelValue = configs.get("run.priority.level");
@@ -677,18 +673,12 @@ public class Master {
             priorityLevel = Integer.parseInt(priorityLevelValue);
         }
         String areaFixed = HeraGlobalEnv.getArea() + Constants.POINT + Constants.HERA_EMR_FIXED;
-        if (configs.containsKey(Constants.HERA_EMR_FIXED) || configs.containsKey(areaFixed)) {
-            isFixed = Boolean.parseBoolean(configs.get(areaFixed)) || Boolean.parseBoolean(configs.get(Constants.HERA_EMR_FIXED));
-        } else {
-            isFixed = Boolean.parseBoolean(getInheritVal(heraAction.getGroupId(), areaFixed, Constants.HERA_EMR_FIXED));
-        }
         Integer endMinute = masterContext.getHeraJobService().findMustEndMinute(heraAction.getJobId());
         JobElement element = JobElement.builder()
                 .jobId(heraJobHistory.getActionId())
                 .hostGroupId(heraJobHistory.getHostGroupId())
                 .priorityLevel(priorityLevel)
                 .historyId(heraJobHistory.getId())
-                .fixedEmr(isFixed)
                 .owner(heraJob.getOwner())
                 .costMinute(endMinute)
                 .build();

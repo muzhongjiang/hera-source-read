@@ -22,7 +22,6 @@ public class JobElement {
 
     private int hostGroupId;
 
-    private boolean fixedEmr;
 
     private Integer priorityLevel;
 

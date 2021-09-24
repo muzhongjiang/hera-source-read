@@ -11,10 +11,6 @@ import com.dfire.common.service.HeraDebugHistoryService;
 import com.dfire.common.service.HeraJobHistoryService;
 import com.dfire.common.util.BeanConvertUtils;
 import com.dfire.common.vo.JobElement;
-import com.dfire.config.HeraGlobalEnv;
-import com.dfire.core.emr.EmrJob;
-import com.dfire.core.emr.FixedEmr;
-import com.dfire.core.emr.WrapEmr;
 import com.dfire.logs.ErrorLog;
 
 import java.util.*;
@@ -29,22 +25,16 @@ import java.util.stream.Collectors;
  */
 public class RunJobThreadPool extends ThreadPoolExecutor {
 
-
     private static ConcurrentHashMap<Runnable, JobElement> jobEmrType;
-    private final EmrJob emr;
     private final HeraJobHistoryService jobHistoryService;
-
     private final HeraDebugHistoryService debugHistoryService;
 
-    private final boolean emrCluster;
 
     public RunJobThreadPool(MasterContext masterContext, int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, ThreadFactory threadFactory, RejectedExecutionHandler handler) {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory, handler);
-        emr = new WrapEmr();
         jobHistoryService = masterContext.getHeraJobHistoryService();
         debugHistoryService = masterContext.getHeraDebugHistoryService();
         jobEmrType = new ConcurrentHashMap<>(maximumPoolSize);
-        emrCluster = HeraGlobalEnv.isEmrJob() && FixedEmr.NAME.equals(HeraGlobalEnv.getEmrCluster());
     }
 
     public static List<Long> getWaitClusterJob(TriggerTypeEnum... typeEnum) {
@@ -83,16 +73,7 @@ public class RunJobThreadPool extends ThreadPoolExecutor {
                 //使用异常来取消该任务的执行
                 throw new IllegalStateException("任务被手动取消:" + jobElement.getJobId());
             }
-            if (!emrCluster) {
-                appendCreateLog(jobElement, "本地执行任务");
-            } else {
-                if (isEmrDynamicJob(jobElement)) {
-                    appendCreateLog(jobElement, "动态集群创建中..");
-                    emr.addJob(jobElement.getOwner());
-                } else {
-                    appendCreateLog(jobElement, "使用固定集群执行任务");
-                }
-            }
+            appendCreateLog(jobElement, "本地执行任务");
             jobElement.setStatus(JobStatus.running);
         } catch (Exception e) {
             ErrorLog.error("任务前置执行异常" + e.getMessage(), e);
@@ -141,17 +122,9 @@ public class RunJobThreadPool extends ThreadPoolExecutor {
     @Override
     protected void afterExecute(Runnable r, Throwable t) {
         JobElement jobElement = jobEmrType.get(r);
-        try {
-            if (isEmrDynamicJob(jobElement)) {
-                emr.removeJob(jobElement.getOwner());
-            }
-        } catch (Exception e) {
-            ErrorLog.error("任务后置执行异常" + e.getMessage(), e);
-        } finally {
-            jobEmrType.remove(r);
-            jobElement.setStatus(JobStatus.complete);
-            doFilter(FilterType.response, jobElement);
-        }
+        jobEmrType.remove(r);
+        jobElement.setStatus(JobStatus.complete);
+        doFilter(FilterType.response, jobElement);
     }
 
     private void appendCreateLog(JobElement element, String log) {
@@ -176,9 +149,7 @@ public class RunJobThreadPool extends ThreadPoolExecutor {
         }
     }
 
-    private boolean isEmrDynamicJob(JobElement element) {
-        return emrCluster && element != null && !element.isFixedEmr();
-    }
+
 
     @Override
     public List<Runnable> shutdownNow() {

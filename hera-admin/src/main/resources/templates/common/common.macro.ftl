@@ -90,31 +90,13 @@
                         <i class="fa fa-dashboard"></i> <span>首页</span>
                     </a>
                 </li>
-                <li class="nav-click" id="machineInfoMenu"><a
-                            href="${request.contextPath}/machineInfo"><i class="fa fa-book"></i> <span>机器组监控</span></a>
+
+                <li class="nav-click" id="developManage"><a
+                            href="${request.contextPath}/developCenter"><i class="fa fa-book"></i> <span>开发中心</span></a>
                 </li>
-
-
-                <li class="treeview menu-closed my-tree" id="sysManager" style="display: none">
-                    <a href="#">
-                        <i class="fa fa-folder"></i> <span>系统管理</span>
-                        <span class="pull-right-container">
-                          <i class="fa fa-angle-left pull-right"></i>
-                        </span>
-                    </a>
-                    <ul class="treeview-menu">
-                        <li id="userManage"><a href="${request.contextPath}/userManage"><i
-                                        class="fa fa-circle-o"></i>
-                                用户管理</a></li>
-                        <li id="jobDag"><a href="${request.contextPath}/jobMonitor"><i
-                                        class="fa fa-circle-o"></i>监控管理</a></li>
-                        <li id="hostGroupManage"><a href="${request.contextPath}/hostGroupManage"><i
-                                        class="fa fa-circle-o"></i>机器组管理</a>
-                        </li>
-                        <li id="workManage"><a href="${request.contextPath}/workManage"><i
-                                        class="fa fa-circle-o"></i>worker管理</a>
-                        </li>
-                    </ul>
+                <li class="nav-click" id="scheduleManage">
+                    <a  href="${request.contextPath}/scheduleCenter"><i class="fa fa-edit"></i>
+                        <span>调度中心</span></a>
                 </li>
 
                 <li class=" treeview menu-closed my-tree" id="jobManage">
@@ -142,13 +124,30 @@
                     </ul>
                 </li>
 
-
-                <li class="nav-click" id="developManage"><a
-                            href="${request.contextPath}/developCenter"><i class="fa fa-book"></i> <span>开发中心</span></a>
+                <li class="nav-click" id="machineInfoMenu">
+                    <a href="${request.contextPath}/machineInfo"><i class="fa fa-book"></i> <span>机器组监控</span></a>
                 </li>
-                <li class="nav-click" id="scheduleManage"><a
-                            href="${request.contextPath}/scheduleCenter"><i class="fa fa-edit"></i>
-                        <span>调度中心</span></a>
+
+                <li class="treeview menu-closed my-tree" id="sysManager" style="display: none">
+                    <a href="#">
+                        <i class="fa fa-folder"></i> <span>系统管理</span>
+                        <span class="pull-right-container">
+                          <i class="fa fa-angle-left pull-right"></i>
+                        </span>
+                    </a>
+                    <ul class="treeview-menu">
+                        <li id="userManage"><a href="${request.contextPath}/userManage"><i
+                                        class="fa fa-circle-o"></i>
+                                用户管理</a></li>
+                        <li id="jobDag"><a href="${request.contextPath}/jobMonitor"><i
+                                        class="fa fa-circle-o"></i>监控管理</a></li>
+                        <li id="hostGroupManage"><a href="${request.contextPath}/hostGroupManage"><i
+                                        class="fa fa-circle-o"></i>机器组管理</a>
+                        </li>
+                        <li id="workManage"><a href="${request.contextPath}/workManage"><i
+                                        class="fa fa-circle-o"></i>worker管理</a>
+                        </li>
+                    </ul>
                 </li>
 
                 <li class="nav-click" id="advice"><a

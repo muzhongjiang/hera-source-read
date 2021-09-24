@@ -7,7 +7,6 @@ import com.dfire.common.util.HierarchyProperties;
 import com.dfire.config.HeraGlobalEnv;
 import com.dfire.core.job.JobContext;
 import com.dfire.core.job.ProcessJob;
-import com.dfire.core.job.UploadEmrFileJob;
 import com.dfire.core.job.UploadLocalFileJob;
 import com.dfire.logs.ErrorLog;
 import com.dfire.logs.HeraLog;
@@ -63,15 +62,9 @@ public class UploadResourceController extends BaseHeraController {
                 jobContext.setWorkDir(HeraGlobalEnv.getWorkDir());
                 ProcessJob uploadJob;
                 int exitCode;
-                //如果是emr集群 先 scp 到emr固定机器上
-                if (HeraGlobalEnv.isEmrJob()) {
-                    //默认都是hadoop用户
-                    uploadJob = new UploadEmrFileJob(jobContext, file.getAbsolutePath(), fileName, HeraGlobalEnv.emrFixedHost);
-                    exitCode = uploadJob.run();
-                } else {
-                    uploadJob = new UploadLocalFileJob(jobContext, file.getAbsolutePath(), HeraGlobalEnv.getHdfsUploadPath());
-                    exitCode = uploadJob.run();
-                }
+                uploadJob = new UploadLocalFileJob(jobContext, file.getAbsolutePath(), HeraGlobalEnv.getHdfsUploadPath());
+                exitCode = uploadJob.run();
+
                 HeraLog.info("controller upload file command {}", uploadJob.getCommandList().toString());
                 if (exitCode == 0) {
                     addRecord(LogTypeEnum.UPLOAD, 1, fileName, RecordTypeEnum.UPLOAD, getSsoName(), getOwnerId());

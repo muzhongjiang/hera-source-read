@@ -102,8 +102,7 @@ public class HeraGlobalEnv {
     private static String jobHiveBin;
     @Getter
     private static String jobSparkSqlBin;
-    @Getter
-    private static boolean emrJob;
+
     @Getter
     private static boolean scriptEcho;
     @Getter
@@ -491,23 +490,6 @@ public class HeraGlobalEnv {
     public void setAwsEmrType(String awsEmrType) {
         HeraGlobalEnv.awsEmrType = awsEmrType;
     }
-
-    @Value("${hera.emrJob}")
-    public void setEmrJob(String emrJob) {
-        if (Boolean.FALSE.toString().equals(emrJob)) {
-            HeraGlobalEnv.emrJob = false;
-        } else {
-            HeraGlobalEnv.emrJob = true;
-
-            String[] emrCluster = emrJob.split(":");
-            if (emrCluster.length == 0 || emrCluster.length == 1) {
-                throw new RuntimeException("emrJob参数设置错误:" + emrJob);
-            }
-            HeraGlobalEnv.emrCluster = emrCluster[1];
-        }
-    }
-
-
 
     @Value("${hera.keyPath}")
     public void setKeyPath(String keyPath) {
