@@ -66,8 +66,6 @@ public interface JobManagerMapper {
      * @param map
      * @return
      */
-
-
     @Select("select job_id,action_id, timestampdiff(SECOND,start_time,end_time)/60 as job_time " +
             "from hera_action_history " +
             "where action_id >= #{startDate} and action_id < #{endDate} " +

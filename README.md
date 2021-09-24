@@ -97,58 +97,6 @@ mvn clean package -Dmaven.test.skip=true -Pdev
 ```
 打包后可以进入`hera-admin/target`目录下查看打包后的`hera-dev.jar` 。此时可以简单使用`java -server -Xms4G -Xmx4G -Xmn2G -jar hera.jar `启动项目，此时即可在浏览器中输入
 
-```
-localhost:8080/hera/login/admin
-```
-即进入登录界面，账号为`hera` 密码为`biadmin`,点击登录即进入系统。
-
-><font color='red'>注：目前hera有用户账户和组账户之分，默认跳转的登录地址为用户账户，需要用户注册（用户需要归属于一个组账户），然后hera组账户在用户管理里页面审核通过后即可登录用户账户。</font>
-
-顺便附上我的启动脚本
-
-```shell
-#!/bin/sh
-
-JAVA_OPTS="-server -Xms4G -Xmx4G -Xmn2G -XX:+UseConcMarkSweepGC -XX:+UseParNewGC -XX:+CMSParallelRemarkEnabled -XX:CMSFullGCsBeforeCompaction=5 -XX:+CMSParallelInitialMarkEnabled -XX:CMSInitiatingOccupancyFraction=80  -verbose:gc -XX:+PrintGCTimeStamps -XX:+PrintGCDetails -Xloggc:/opt/logs/spring-boot/gc.log -XX:MetaspaceSize=128m -XX:+UseCMSCompactAtFullCollection -XX:MaxMetaspaceSize=128m -XX:+CMSPermGenSweepingEnabled -XX:+CMSClassUnloadingEnabled -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/opt/logs/spring-boot/dump"
-
-log_dir="/opt/logs/spring-boot"
-log_file="/opt/logs/spring-boot/all.log"
-jar_file="/opt/app/spring-boot/hera.jar"
-
-
-#日志文件夹不存在，则创建
-if [ ! -d "${log_dir}" ]; then
-    echo "创建日志目录:${log_dir}"
-    mkdir -p "${log_dir}"
-    echo "创建日志目录完成:${log_dir}"
-fi
-
-
-#父目录下jar文件存在
-if [ -f "${jar_file}" ]; then
-    #启动jar包 错误输出的error 标准输出的log
-    nohup java $JAVA_OPTS -jar ${jar_file} 1>"${log_file}" 2>"${log_dir}"/error.log &
-    echo "启动完成"
-    exit 0
-else
-    echo -e "\033[31m${jar_file}文件不存在！\033[0m"
-    exit 1
-fi
-```
-关闭的脚本
-
-```bash
-#!/bin/bash
-pid=`ps aux| grep java | grep hera | awk '{print $2}'`
-
-[ ! $pid ] && echo "找不到hera的进程,请确认hera已经启动" && exit 0
-
-res=`kill -9 $pid`
-
-echo 关闭hera成功，pid:$pid
-
-
-```
 
 
 ## 测试
@@ -244,3 +192,5 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
+
+

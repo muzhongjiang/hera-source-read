@@ -130,14 +130,15 @@ public class UserManageController {
      *
      * @return
      */
-
     @RequestMapping(value = "/operateUser", method = RequestMethod.POST)
     @ResponseBody
     @AdminCheck
     @ApiOperation(value = "用户操作接口")
-    public JsonResponse operateUser(@ApiParam(value = "用户组信息", required = true) Integer id
+    public JsonResponse operateUser(
+            @ApiParam(value = "用户组信息", required = true) Integer id
             , @ApiParam(value = "操作类型，1：删除，2：同意，3：拒绝", required = true) String operateType
-            , @ApiParam(value = "用户类型，1：用户，0：用户组", required = true) Integer userType) {
+            , @ApiParam(value = "用户类型，1：用户，0：用户组", required = true) Integer userType
+    ) {
         JsonResponse response = new JsonResponse(false, "更新失败");
         switch (UserType.parse(userType)) {
             case SSO:

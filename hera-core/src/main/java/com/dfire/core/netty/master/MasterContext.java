@@ -45,42 +45,60 @@ public class MasterContext {
      */
 
     protected ScheduledThreadPoolExecutor masterSchedule;
+
     @Autowired
     private Master master;
+
     private Map<Channel, MasterWorkHolder> workMap = new ConcurrentHashMap<>();
+
     @Autowired
     private HeraHostGroupService heraHostGroupService;
+
     @Autowired
     @Qualifier("heraFileMemoryService")
     private HeraFileService heraFileService;
+
     @Autowired
     private QuartzSchedulerService quartzSchedulerService;
+
     @Autowired
     @Qualifier("heraGroupMemoryService")
     private HeraGroupService heraGroupService;
+
     @Autowired
     private HeraJobHistoryService heraJobHistoryService;
+
     @Autowired
     private HeraUserService heraUserService;
+
     @Autowired
     @Qualifier("heraJobMemoryService")
     private HeraJobService heraJobService;
+
     @Autowired
     private HeraAreaService heraAreaService;
+
     @Autowired
     private HeraDebugHistoryService heraDebugHistoryService;
+
     @Autowired
     private HeraJobActionService heraJobActionService;
+
     @Autowired
     private EmailService emailService;
+
     @Autowired
     private AlarmCenter alarmCenter;
+
     @Autowired
     private HeraJobMonitorService heraJobMonitorService;
+
     @Autowired
     private HeraSsoService heraSsoService;
+
     @Autowired
     private HeraRerunService heraRerunService;
+
     private Dispatcher dispatcher;
     private Map<Integer, HeraHostGroupVo> hostGroupCache;
     private BlockingQueue<JobElement> scheduleQueue = new PriorityBlockingQueue<>(10000, new FiFoComp());
@@ -181,6 +199,9 @@ public class MasterContext {
     }
 
     public synchronized Map<Integer, HeraHostGroupVo> getHostGroupCache() {
+        if (hostGroupCache==null){
+            this.refreshHostGroupCache();
+        }
         return hostGroupCache;
     }
 

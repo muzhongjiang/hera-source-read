@@ -7,8 +7,7 @@ import com.dfire.logs.ErrorLog;
 import java.io.IOException;
 
 /**
- * @author xiaosuda
- * @date 2018/8/6
+ * cpu负载信息
  */
 public class CpuLoadPerCoreJob extends RunShell {
 

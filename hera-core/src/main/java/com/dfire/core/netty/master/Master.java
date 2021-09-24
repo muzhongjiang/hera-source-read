@@ -100,6 +100,7 @@ public class Master {
             HeraLog.info("refresh hostGroup cache");
         });
     }
+
     public boolean isTaskLimit() {
         return masterRunJob.isTaskLimit();
     }
@@ -359,7 +360,7 @@ public class Master {
             heraAction.setDependencies(null);
             heraAction.setReadyDependency(null);
             heraAction.setHostGroupId(heraJob.getHostGroupId());
-            heraAction.setBatchId(getBatchIdFromActionIdPeriod(actionId,heraJob.getCronPeriod(),heraJob.getCronInterval())); //批次号
+            heraAction.setBatchId(getBatchIdFromActionIdPeriod(actionId, heraJob.getCronPeriod(), heraJob.getCronInterval())); //批次号
             heraActionList.add(heraAction);
         }
         return heraActionList;
@@ -485,7 +486,7 @@ public class Master {
                         actionNew.setJobId(heraJob.getId());
                         actionNew.setAuto(heraJob.getAuto());
                         actionNew.setHostGroupId(heraJob.getHostGroupId());
-                        actionNew.setBatchId(getBatchIdFromActionIdPeriod(actionId,heraJob.getCronPeriod(),heraJob.getCronInterval()));//批次号
+                        actionNew.setBatchId(getBatchIdFromActionIdPeriod(actionId, heraJob.getCronPeriod(), heraJob.getCronInterval()));//批次号
                         masterContext.getHeraJobActionService().insert(actionNew, nowAction);
                         actionMap.put(actionNew.getId(), actionNew);
                         insertList.add(actionNew);
@@ -496,7 +497,6 @@ public class Master {
         }
 
     }
-
 
 
     public boolean scanQueue(BlockingQueue<JobElement> queue) throws InterruptedException {
@@ -585,11 +585,13 @@ public class Master {
                 .costMinute(0)
                 .build();
         debugHistory.setStatus(StatusEnum.RUNNING);
-        debugHistory.setStartTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
-        debugHistory.getLog().append(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()) + " 进入任务队列");
+        String startTime = ActionUtil.getTodayString();
+
+        debugHistory.setStartTime(startTime);
+        debugHistory.getLog().append(startTime + " 进入任务队列");
         masterContext.getHeraDebugHistoryService().update(BeanConvertUtils.convert(debugHistory));
         try {
-            masterContext.getDebugQueue().put(element);
+            masterContext.getDebugQueue().put(element);//队列
         } catch (InterruptedException e) {
             ErrorLog.error("添加开发中心执行任务失败:" + element.getJobId(), e);
         }
@@ -655,12 +657,14 @@ public class Master {
         }
 
         //先在数据库中set一些执行任务所需的必须值 然后再加入任务队列
-        heraAction.setLastResult(heraAction.getStatus());
-        heraAction.setStatus(StatusEnum.RUNNING.toString());
-        heraAction.setHistoryId(heraJobHistory.getId());
-        heraAction.setStatisticStartTime(new Date());
-        heraAction.setStatisticEndTime(null);
+        heraAction.setLastResult(heraAction.getStatus())
+                .setStatus(StatusEnum.RUNNING.toString())
+                .setHistoryId(heraJobHistory.getId())
+                .setStatisticStartTime(new Date())
+                .setStatisticEndTime(null)
+        ;
         masterContext.getHeraJobActionService().update(heraAction);
+
         heraJobHistory.getLog().append(ActionUtil.getTodayString() + " 进入任务队列");
         masterContext.getHeraJobHistoryService().update(BeanConvertUtils.convert(heraJobHistory));
 
@@ -951,52 +955,53 @@ public class Master {
 
     /**
      * 输出批次号
+     *
      * @param actionId
-     * @param cronPeriod 周期
+     * @param cronPeriod   周期
      * @param cronInterval 间隔
      * @return 批次号；示例actionId=20190102112233,cronPeriod=day,cronInterval=-1,则批次号=2019-01-01
      */
-    public String getBatchIdFromActionIdPeriod(Long actionId,String cronPeriod,int cronInterval) {
-    	cronPeriod=cronPeriod.toLowerCase();
-    	if(cronPeriod.equals("other")){
-    		return actionId.toString();
-    	}else{
-    		String dmStr=actionId.toString().substring(0, 14);
-    		Date currDate = HeraDateTool.StringToDate(dmStr, "yyyyMMddHHmmss");
-    		Calendar cal=Calendar.getInstance();
-    		cal.setTime(currDate);
-    		String outDateStr;
-    		SimpleDateFormat outDateFormat = new SimpleDateFormat(TimeFormatConstant.YYYY_MM_DD_HH_MM_SS);
-    		if(cronPeriod.equals("year")){
-    			cal.add(Calendar.YEAR, cronInterval);
-    			outDateStr = outDateFormat.format(cal.getTime());
-    			return outDateStr.substring(0,4);
-    		}else if(cronPeriod.equals("month")){
-    			cal.add(Calendar.MONTH, cronInterval);
-    			outDateStr = outDateFormat.format(cal.getTime());
-    			return outDateStr.substring(0,7);
-    		}else if(cronPeriod.equals("day")){
-    			cal.add(Calendar.DATE, cronInterval);
-    			outDateStr = outDateFormat.format(cal.getTime());
-    			return outDateStr.substring(0,10);
-    		}else if(cronPeriod.equals("hour")){
-    			cal.add(Calendar.HOUR, cronInterval);
-    			outDateStr = outDateFormat.format(cal.getTime());
-    			return outDateStr.substring(0,13);
-    		}else if(cronPeriod.equals("minute")){
-    			cal.add(Calendar.MINUTE, cronInterval);
-    			outDateStr = outDateFormat.format(cal.getTime());
-    			return outDateStr.substring(0,16);
-    		}else if(cronPeriod.equals("second")){
-    			cal.add(Calendar.SECOND, cronInterval);
-    			outDateStr = outDateFormat.format(cal.getTime());
-    			return outDateStr.substring(0,19);
-    		}else{//未知，使用秒方案
-    			cal.add(Calendar.SECOND, cronInterval);
-    			outDateStr = outDateFormat.format(cal.getTime());
-    			return outDateStr.substring(0,19);
-    		}
-    	}
+    public String getBatchIdFromActionIdPeriod(Long actionId, String cronPeriod, int cronInterval) {
+        cronPeriod = cronPeriod.toLowerCase();
+        if (cronPeriod.equals("other")) {
+            return actionId.toString();
+        } else {
+            String dmStr = actionId.toString().substring(0, 14);
+            Date currDate = HeraDateTool.StringToDate(dmStr, "yyyyMMddHHmmss");
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(currDate);
+            String outDateStr;
+            SimpleDateFormat outDateFormat = new SimpleDateFormat(TimeFormatConstant.YYYY_MM_DD_HH_MM_SS);
+            if (cronPeriod.equals("year")) {
+                cal.add(Calendar.YEAR, cronInterval);
+                outDateStr = outDateFormat.format(cal.getTime());
+                return outDateStr.substring(0, 4);
+            } else if (cronPeriod.equals("month")) {
+                cal.add(Calendar.MONTH, cronInterval);
+                outDateStr = outDateFormat.format(cal.getTime());
+                return outDateStr.substring(0, 7);
+            } else if (cronPeriod.equals("day")) {
+                cal.add(Calendar.DATE, cronInterval);
+                outDateStr = outDateFormat.format(cal.getTime());
+                return outDateStr.substring(0, 10);
+            } else if (cronPeriod.equals("hour")) {
+                cal.add(Calendar.HOUR, cronInterval);
+                outDateStr = outDateFormat.format(cal.getTime());
+                return outDateStr.substring(0, 13);
+            } else if (cronPeriod.equals("minute")) {
+                cal.add(Calendar.MINUTE, cronInterval);
+                outDateStr = outDateFormat.format(cal.getTime());
+                return outDateStr.substring(0, 16);
+            } else if (cronPeriod.equals("second")) {
+                cal.add(Calendar.SECOND, cronInterval);
+                outDateStr = outDateFormat.format(cal.getTime());
+                return outDateStr.substring(0, 19);
+            } else {//未知，使用秒方案
+                cal.add(Calendar.SECOND, cronInterval);
+                outDateStr = outDateFormat.format(cal.getTime());
+                return outDateStr.substring(0, 19);
+            }
+        }
     }
 
 

@@ -12,8 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author xiaosuda
- * @date 2018/11/12
+ * 系统监控
  */
 public class OsProcessJob extends RunShell {
 

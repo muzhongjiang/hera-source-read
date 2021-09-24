@@ -144,7 +144,9 @@ public class MasterHandlerWebResponse {
      * @return WebResponse
      */
     public static WebResponse generateActionByJobId(MasterContext context, WebRequest request) {
-        boolean result = String.valueOf(Constants.ALL_JOB_ID).equals(request.getId()) ? context.getMaster().generateBatchAction(true) : context.getMaster().generateSingleAction(Integer.parseInt(request.getId()));
+        boolean result = String.valueOf(Constants.ALL_JOB_ID).equals(request.getId()) ?
+                context.getMaster().generateBatchAction(true)
+                : context.getMaster().generateSingleAction(Integer.parseInt(request.getId()));
         return WebResponse.newBuilder()
                 .setRid(request.getRid())
                 .setOperate(WebOperate.ExecuteJob)

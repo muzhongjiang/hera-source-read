@@ -2,7 +2,6 @@ package com.dfire.core.netty.master;
 
 import com.dfire.common.util.NamedThreadFactory;
 import com.dfire.core.netty.HeraChannel;
-import com.dfire.core.netty.NettyChannel;
 import com.dfire.core.netty.cluster.FailBackCluster;
 import com.dfire.core.netty.listener.ResponseListener;
 import com.dfire.core.netty.master.response.MasterHandleRequest;
@@ -109,7 +108,7 @@ public class MasterHandler extends ChannelInboundHandlerAdapter {
                         completionService.submit(() ->
                                 new ChannelResponse(FailBackCluster.wrap(channel), MasterHandlerWebResponse.handleWebDebug(masterContext, webRequest)));
                         break;
-                    case GenerateAction:
+                    case GenerateAction://生成版本
                         completionService.submit(() ->
                                 new ChannelResponse(FailBackCluster.wrap(channel), MasterHandlerWebResponse.generateActionByJobId(masterContext, webRequest)));
                         break;

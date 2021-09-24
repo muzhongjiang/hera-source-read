@@ -24,17 +24,25 @@ import java.util.concurrent.TimeUnit;
  */
 public abstract class BaseHeraController {
 
-
     private static ThreadPoolExecutor poolExecutor;
     private static ThreadLocal<HttpServletRequest> requestThread = new ThreadLocal<>();
+
     @Autowired
     protected HeraRecordService recordService;
+
     @Autowired
     ScheduleCenterController scheduleCenterController;
 
     {
         poolExecutor = new ThreadPoolExecutor(
-                1, Runtime.getRuntime().availableProcessors() * 4, 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(), new NamedThreadFactory("updateJobThread"), new ThreadPoolExecutor.AbortPolicy());
+                1,
+                Runtime.getRuntime().availableProcessors() * 4,
+                60L,
+                TimeUnit.SECONDS,
+                new LinkedBlockingQueue<>(),
+                new NamedThreadFactory("updateJobThread"),
+                new ThreadPoolExecutor.AbortPolicy()
+        );
         poolExecutor.allowCoreThreadTimeOut(true);
     }
 

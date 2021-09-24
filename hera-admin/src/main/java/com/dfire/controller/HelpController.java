@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequestMapping("/help")
-
 public class HelpController {
 
     @RequestMapping

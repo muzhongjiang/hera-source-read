@@ -74,7 +74,8 @@ CREATE TABLE IF NOT EXISTS `hera_action_history`
   KEY `idx_end_time` (`end_time`),
   KEY `idx_start_time` (`start_time`)
 ) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4 COMMENT ='Job运行日志表';
+  DEFAULT CHARSET = utf8mb4 COMMENT ='Job运行日志表（任务运行历史）';
+
 CREATE TABLE IF NOT EXISTS `hera_advice`
 (
   `id`          bigint(20) NOT NULL AUTO_INCREMENT,

@@ -38,20 +38,16 @@ public class HeraRunListener implements SpringApplicationRunListener {
     @Override
     public void environmentPrepared(ConfigurableEnvironment environment) {
         MonitorLog.info("spring environmentPrepared");
-
-
     }
 
     @Override
     public void contextPrepared(ConfigurableApplicationContext context) {
         MonitorLog.info("spring contextPrepared");
-
     }
 
     @Override
     public void contextLoaded(ConfigurableApplicationContext context) {
         MonitorLog.info("spring contextLoaded");
-
     }
 
     @Override
