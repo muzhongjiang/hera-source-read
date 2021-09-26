@@ -11,6 +11,7 @@ import com.dfire.config.HeraGlobalEnv;
 import com.dfire.core.netty.worker.WorkClient;
 import com.dfire.logs.MonitorLog;
 import com.dfire.protocol.JobExecuteKind;
+import com.google.common.collect.ImmutableMap;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -23,7 +24,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -124,7 +124,7 @@ public class DevelopCenterController extends BaseHeraController {
         }
         String name = file.getName();
         file.setContent(heraFile.getContent());
-        heraFileService.updateContent(heraFile);
+        heraFileService.updateContent(heraFile);//先保存
         HeraDebugHistory history = HeraDebugHistory.builder()
                 .fileId(file.getId())
                 .script(heraFile.getContent())
@@ -160,6 +160,7 @@ public class DevelopCenterController extends BaseHeraController {
         return executeJob(name, history, getSsoName());
     }
 
+
     private JsonResponse executeJob(String name, HeraDebugHistory history, String ssoName) throws ExecutionException, InterruptedException, TimeoutException {
         int suffixIndex = name.lastIndexOf(Constants.POINT);
         if (suffixIndex == -1) {
@@ -179,11 +180,15 @@ public class DevelopCenterController extends BaseHeraController {
         history.setRunType(runType);
         Long newId = debugHistoryService.insert(history);
         String ownerId = getOwnerId();
-        doAsync(() -> addDebugRecord(history.getFileId(), String.valueOf(history.getId()), RecordTypeEnum.Execute, ssoName, ownerId));
+        //记录debug log：
+        this.doAsync(() -> this.addDebugRecord(history.getFileId(), String.valueOf(history.getId()), RecordTypeEnum.Execute, ssoName, ownerId));
+        //调用work执行：
         workClient.executeJobFromWeb(JobExecuteKind.ExecuteKind.DebugKind, newId);
-        Map<String, Object> res = new HashMap<>(2);
-        res.put("fileId", history.getFileId());
-        res.put("debugId", newId);
+
+        Map<String, Object> res = ImmutableMap.of(
+                "fileId", history.getFileId(),
+                "debugId", newId
+        );
         return new JsonResponse(true, "执行成功", res);
     }
 
@@ -267,8 +272,6 @@ public class DevelopCenterController extends BaseHeraController {
         boolean result = heraFileService.updateContent(heraFile) > 0;
         return new JsonResponse(result, result ? "保存成功" : "保存失败");
     }
-
-
 
 
 }

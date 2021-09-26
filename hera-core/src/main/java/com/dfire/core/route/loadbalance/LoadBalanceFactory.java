@@ -3,6 +3,7 @@ package com.dfire.core.route.loadbalance;
 import com.dfire.config.HeraGlobalEnv;
 import com.dfire.core.route.loadbalance.impl.RandomLoadBalance;
 import com.dfire.core.route.loadbalance.impl.RoundRobinLoadBalance;
+import lombok.extern.slf4j.Slf4j;
 
 
 /**
@@ -10,19 +11,23 @@ import com.dfire.core.route.loadbalance.impl.RoundRobinLoadBalance;
  *
  * @author xiaosuda
  */
+@Slf4j
 public class LoadBalanceFactory {
 
     public static LoadBalance getLoadBalance() {
-
-        if (RoundRobinLoadBalance.NAME.equals(HeraGlobalEnv.getLoadBalance())) {
-            return new RoundRobinLoadBalance();
+        LoadBalance loadBalance;
+        switch (HeraGlobalEnv.getLoadBalance()) {
+            case RoundRobinLoadBalance.NAME:
+                loadBalance = new RoundRobinLoadBalance();
+                break;
+            case RandomLoadBalance.NAME:
+                loadBalance = new RandomLoadBalance();
+                break;
+            default:
+                loadBalance = new RoundRobinLoadBalance();
+                log.warn("配置LoadBalance有误，使用默认值 RoundRobinLoadBalance");
         }
-
-        if (RandomLoadBalance.NAME.equals(HeraGlobalEnv.getLoadBalance())) {
-            return new RandomLoadBalance();
-        }
-
-        return new RoundRobinLoadBalance();
+        return loadBalance;
     }
 
 }

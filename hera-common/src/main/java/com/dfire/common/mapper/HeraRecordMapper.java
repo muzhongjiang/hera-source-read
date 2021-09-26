@@ -8,10 +8,7 @@ import org.apache.ibatis.annotations.*;
 import java.util.List;
 
 /**
- * desc:
- *
- * @author scx
- * @create 2019/06/10
+ * debug日志
  */
 public interface HeraRecordMapper {
 

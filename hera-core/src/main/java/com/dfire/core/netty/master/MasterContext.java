@@ -101,11 +101,17 @@ public class MasterContext {
 
     private Dispatcher dispatcher;
     private Map<Integer, HeraHostGroupVo> hostGroupCache;
+
+
+    //任务队列：
     private BlockingQueue<JobElement> scheduleQueue = new PriorityBlockingQueue<>(10000, new FiFoComp());
     private BlockingQueue<JobElement> debugQueue = new LinkedBlockingQueue<>(10000);
     private BlockingQueue<JobElement> manualQueue = new LinkedBlockingQueue<>(10000);
     private BlockingQueue<JobElement> rerunQueue = new LinkedBlockingQueue<>(10000);
     private BlockingQueue<JobElement> superRecovery = new LinkedBlockingQueue<>(10000);
+
+
+
     private MasterHandler handler;
     private MasterServer masterServer;
     @Getter

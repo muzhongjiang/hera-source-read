@@ -15,7 +15,7 @@ public enum TriggerTypeEnum {
     /**
      * 手动执行任务
      */
-    MANUAL(2, "手动触发"),
+    MANUAL(2, "手动执行"),
     /**
      * 手动恢复任务
      */
@@ -27,7 +27,6 @@ public enum TriggerTypeEnum {
     /**
      * 自动重跑
      */
-
     AUTO_RERUN(5, "自动重跑"),
     /**
      * 超级恢复

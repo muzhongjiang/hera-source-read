@@ -20,8 +20,6 @@ import com.dfire.common.util.ActionUtil;
 import com.dfire.common.util.BeanConvertUtils;
 import com.dfire.common.vo.JobStatus;
 import com.dfire.core.event.Dispatcher;
-import com.dfire.core.job.CancelHadoopJob;
-import com.dfire.core.job.JobContext;
 import com.dfire.core.netty.master.Master;
 import com.dfire.core.netty.master.MasterContext;
 import com.dfire.core.netty.master.response.MasterCancelJob;
@@ -196,45 +194,55 @@ public class JobHandler extends AbstractHandler {
         }
         JobStatus jobStatus;
 
-        //如果是超级恢复
-        if (event.getTriggerType() == TriggerTypeEnum.SUPER_RECOVER) {
-            //检测依赖任务是否已经执行成功，如果不是成功状态，则取消下游触发
-            List<Long> dependencies = heraActionVo.getDependencies();
-            boolean canRun = true;
-            for (Long actionId : dependencies) {
-                HeraAction heraAction = heraJobActionService.findById(actionId);
-                if (heraAction == null || !StatusEnum.SUCCESS.toString().equals(heraAction.getStatus())) {
-                    canRun = false;
-                    ScheduleLog.info(String.format("cancel %s super recovery,job %s not success ", heraActionVo.getId(), actionId));
-                    break;
+        switch (event.getTriggerType()) {
+            //如果是超级恢复:
+            case SUPER_RECOVER: {
+                //检测依赖任务是否已经执行成功，如果不是成功状态，则取消下游触发
+                List<Long> dependencies = heraActionVo.getDependencies();
+                boolean canRun = true;
+                for (Long actionId : dependencies) {
+                    HeraAction heraAction = heraJobActionService.findById(actionId);
+                    if (heraAction == null || !StatusEnum.SUCCESS.toString().equals(heraAction.getStatus())) {
+                        canRun = false;
+                        ScheduleLog.info(String.format("cancel %s super recovery,job %s not success ", heraActionVo.getId(), actionId));
+                        break;
+                    }
+                }
+                if (canRun) {
+                    ScheduleLog.info("JobId:" + actionId + " trigger super recovery dependency,run!");
+                    startNewJob(heraActionVo, LogConstant.SUPER_RECOVER_LOG, TriggerTypeEnum.SUPER_RECOVER);
                 }
             }
-            if (canRun) {
-                ScheduleLog.info("JobId:" + actionId + " trigger super recovery dependency,run!");
-                startNewJob(heraActionVo, LogConstant.SUPER_RECOVER_LOG, TriggerTypeEnum.SUPER_RECOVER);
-            }
-        } else if (event.getTriggerType() == TriggerTypeEnum.SCHEDULE || event.getTriggerType() == TriggerTypeEnum.MANUAL_RECOVER) {
-            //必须同步
-            synchronized (this) {
-                jobStatus = heraJobActionService.findJobStatus(actionId);
-                ScheduleLog.info(actionId + "received a success dependency job with actionId = " + jobId);
-                jobStatus.getReadyDependency().put(String.valueOf(jobId), String.valueOf(System.currentTimeMillis()));
-                heraJobActionService.updateStatus(jobStatus);
-            }
-            boolean allComplete = true;
-            for (Long key : heraActionVo.getDependencies()) {
-                if (jobStatus.getReadyDependency().get(String.valueOf(key)) == null) {
-                    allComplete = false;
-                    break;
+            break;
+
+            case SCHEDULE:
+            case MANUAL_RECOVER: {
+                //必须同步
+                synchronized (this) {
+                    jobStatus = heraJobActionService.findJobStatus(actionId);
+                    ScheduleLog.info(actionId + "received a success dependency job with actionId = " + jobId);
+                    jobStatus.getReadyDependency().put(String.valueOf(jobId), String.valueOf(System.currentTimeMillis()));
+                    heraJobActionService.updateStatus(jobStatus);
+                }
+                boolean allComplete = true;
+                for (Long key : heraActionVo.getDependencies()) {
+                    if (jobStatus.getReadyDependency().get(String.valueOf(key)) == null) {
+                        allComplete = false;
+                        break;
+                    }
+                }
+                if (allComplete) {
+                    ScheduleLog.info("JobId:" + actionId + " all dependency jobs is ready,run!");
+                    startNewJob(heraActionVo, LogConstant.DEPENDENT_READY_LOG, TriggerTypeEnum.SCHEDULE);
+                } else {
+                    ScheduleLog.info(actionId + "some of dependency is not ready, waiting" + JSONObject.toJSONString(jobStatus.getReadyDependency().keySet()));
                 }
             }
-            if (allComplete) {
-                ScheduleLog.info("JobId:" + actionId + " all dependency jobs is ready,run!");
-                startNewJob(heraActionVo, LogConstant.DEPENDENT_READY_LOG, TriggerTypeEnum.SCHEDULE);
-            } else {
-                ScheduleLog.info(actionId + "some of dependency is not ready, waiting" + JSONObject.toJSONString(jobStatus.getReadyDependency().keySet()));
-            }
+            break;
+
+
         }
+
     }
 
 

@@ -7,7 +7,6 @@ import com.dfire.common.service.HeraHostGroupService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -16,8 +15,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import java.util.List;
 
 /**
- * @author xiaosuda
- * @date 2018/4/20
+ * 机器组相关接口
  */
 @Controller
 @RequestMapping("/hostGroup/")

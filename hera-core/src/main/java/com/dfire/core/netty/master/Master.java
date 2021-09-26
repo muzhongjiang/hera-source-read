@@ -630,7 +630,8 @@ public class Master {
         }
         HeraAction heraAction = masterContext.getHeraJobActionService().findById(actionId);
         Set<String> areaList = areaList(heraJob.getAreaId());
-        //非执行区域任务直接设置为成功
+
+        //非执行区域任务直接设置为成功:  TODO ???
         if (!areaList.contains(HeraGlobalEnv.getArea()) && !areaList.contains(Constants.ALL_AREA)) {
             ScheduleLog.info("非{}区域任务，直接设置为成功:{}", HeraGlobalEnv.getArea(), heraJob.getId());
             heraAction.setLastResult(heraAction.getStatus());
@@ -642,29 +643,36 @@ public class Master {
             Date endTime = new Date();
             heraAction.setStatisticStartTime(endTime);
             heraAction.setStatisticEndTime(endTime);
-            masterContext.getHeraJobActionService().update(heraAction);
+            masterContext.getHeraJobActionService().update(heraAction);//更新 hera_action
+
+            //更新 HeraJobHistory:
             heraJobHistory.getLog().append("非" + HeraGlobalEnv.getArea() + "区域任务，直接设置为成功");
             heraJobHistory.setStatusEnum(StatusEnum.SUCCESS);
             heraJobHistory.setEndTime(endTime);
             heraJobHistory.setStartTime(endTime);
             heraJobHistory.setExecuteHost(host);
             masterContext.getHeraJobHistoryService().update(BeanConvertUtils.convert(heraJobHistory));
+
+            // TODO ???
             HeraJobSuccessEvent successEvent = new HeraJobSuccessEvent(actionId, heraJobHistory.getTriggerType(), heraJobHistory);
             masterContext.getDispatcher().forwardEvent(successEvent);
             return;
         }
 
         //先在数据库中set一些执行任务所需的必须值 然后再加入任务队列
-        heraAction.setLastResult(heraAction.getStatus())
+        heraAction
+                .setLastResult(heraAction.getStatus())
                 .setStatus(StatusEnum.RUNNING.toString())
                 .setHistoryId(heraJobHistory.getId())
                 .setStatisticStartTime(new Date())
                 .setStatisticEndTime(null)
         ;
-        masterContext.getHeraJobActionService().update(heraAction);
+        masterContext.getHeraJobActionService().update(heraAction);//更新 hera_action
 
+        //更新 HeraJobHistory:
         heraJobHistory.getLog().append(ActionUtil.getTodayString() + " 进入任务队列");
         masterContext.getHeraJobHistoryService().update(BeanConvertUtils.convert(heraJobHistory));
+
 
         int priorityLevel = 3;
         Map<String, String> configs = StringUtil.convertStringToMap(heraAction.getConfigs());
@@ -672,7 +680,6 @@ public class Master {
         if (priorityLevelValue != null) {
             priorityLevel = Integer.parseInt(priorityLevelValue);
         }
-        String areaFixed = HeraGlobalEnv.getArea() + Constants.POINT + Constants.HERA_EMR_FIXED;
         Integer endMinute = masterContext.getHeraJobService().findMustEndMinute(heraAction.getJobId());
         JobElement element = JobElement.builder()
                 .jobId(heraJobHistory.getActionId())
@@ -688,6 +695,7 @@ public class Master {
             if (cacheAction != null) {
                 cacheAction.setStatus(StatusEnum.RUNNING.toString());
             }
+            //放入对应的执行队列：
             switch (heraJobHistory.getTriggerType()) {
                 case MANUAL:
                     masterContext.getManualQueue().put(element);
@@ -714,77 +722,96 @@ public class Master {
 
     public boolean checkJobExists(HeraJobHistoryVo heraJobHistory, boolean checkOnly) {
         // 允许重复的话 不检测,重跑任务也不检测
-        if (masterContext.getHeraJobService().isRepeat(heraJobHistory.getJobId()) || heraJobHistory.getTriggerType() == TriggerTypeEnum.AUTO_RERUN) {
+        if (
+                masterContext.getHeraJobService().isRepeat(heraJobHistory.getJobId())
+                || heraJobHistory.getTriggerType() == TriggerTypeEnum.AUTO_RERUN
+        ) {
             return false;
         }
         Long actionId = heraJobHistory.getActionId();
         Integer jobId = heraJobHistory.getJobId();
 
         boolean exists = false;
-        if (heraJobHistory.getTriggerType() == TriggerTypeEnum.MANUAL_RECOVER || heraJobHistory.getTriggerType() == TriggerTypeEnum.SCHEDULE) {
-            // check调度器等待队列是否有此任务在排队
-            for (JobElement jobElement : masterContext.getScheduleQueue()) {
-                if (ActionUtil.jobEquals(jobElement.getJobId(), actionId)) {
-                    exists = true;
-                    TaskLog.warn("调度队列已存在该任务，添加失败 {}", actionId);
-                }
-            }
-            // check所有的worker中是否有此任务的id在执行，如果有，不进入队列等待
-            for (MasterWorkHolder workHolder : masterContext.getWorkMap().values()) {
-                if (!exists) {
-                    for (Long aLong : workHolder.getRunning()) {
-                        if (Objects.equals(ActionUtil.getJobId(aLong.toString()), jobId)) {
-                            exists = true;
-                            TaskLog.warn("该任务正在执行，添加失败 {}", actionId);
-                            break;
-                        }
+        switch (heraJobHistory.getTriggerType()) {
+            //手动恢复 或 自动调度 ：
+            case MANUAL_RECOVER:
+            case SCHEDULE: {
+                // check调度器等待队列是否有此任务在排队
+                for (JobElement jobElement : masterContext.getScheduleQueue()) {
+                    if (ActionUtil.jobEquals(jobElement.getJobId(), actionId)) {
+                        exists = true;
+                        TaskLog.warn("调度队列已存在该任务，添加失败 {}", actionId);
                     }
                 }
-
-            }
-        } else if (heraJobHistory.getTriggerType() == TriggerTypeEnum.SUPER_RECOVER) {
-            // check调度器等待队列是否有此任务在排队
-            for (JobElement jobElement : masterContext.getSuperRecovery()) {
-                if (ActionUtil.jobEquals(jobElement.getJobId(), actionId)) {
-                    exists = true;
-                    TaskLog.warn("调度队列已存在该任务，添加失败 {}", actionId);
-                }
-            }
-            // check所有的worker中是否有此任务的id在执行，如果有，不进入队列等待
-            for (MasterWorkHolder workHolder : masterContext.getWorkMap().values()) {
-                if (!exists) {
-                    for (Long aLong : workHolder.getSuperRunning()) {
-                        if (Objects.equals(ActionUtil.getJobId(aLong.toString()), jobId)) {
-                            exists = true;
-                            TaskLog.warn("该任务正在执行，添加失败 {}", actionId);
-                            break;
+                // check所有的worker中是否有此任务的id在执行，如果有，不进入队列等待
+                for (MasterWorkHolder workHolder : masterContext.getWorkMap().values()) {
+                    if (!exists) {
+                        for (Long aLong : workHolder.getRunning()) {
+                            if (Objects.equals(ActionUtil.getJobId(aLong.toString()), jobId)) {
+                                exists = true;
+                                TaskLog.warn("该任务正在执行，添加失败 {}", actionId);
+                                break;
+                            }
                         }
                     }
-                }
 
-            }
-        } else if (heraJobHistory.getTriggerType() == TriggerTypeEnum.MANUAL) {
-
-            for (JobElement jobElement : masterContext.getManualQueue()) {
-                if (ActionUtil.jobEquals(jobElement.getJobId(), actionId)) {
-                    exists = true;
-                    TaskLog.warn("手动任务队列已存在该任务，添加失败 {}", actionId);
                 }
             }
+            break;
 
-            for (MasterWorkHolder workHolder : masterContext.getWorkMap().values()) {
-                if (!exists) {
-                    for (Long aLong : workHolder.getManningRunning()) {
-                        if (Objects.equals(ActionUtil.getJobId(aLong.toString()), jobId)) {
-                            exists = true;
-                            TaskLog.warn("该任务正在执行，添加失败 {}", actionId);
-                            break;
-                        }
+            //        超级恢复:
+            case SUPER_RECOVER: {
+                // check调度器等待队列是否有此任务在排队
+                for (JobElement jobElement : masterContext.getSuperRecovery()) {
+                    if (ActionUtil.jobEquals(jobElement.getJobId(), actionId)) {
+                        exists = true;
+                        TaskLog.warn("调度队列已存在该任务，添加失败 {}", actionId);
                     }
                 }
+                // check所有的worker中是否有此任务的id在执行，如果有，不进入队列等待
+                for (MasterWorkHolder workHolder : masterContext.getWorkMap().values()) {
+                    if (!exists) {
+                        for (Long aLong : workHolder.getSuperRunning()) {
+                            if (Objects.equals(ActionUtil.getJobId(aLong.toString()), jobId)) {
+                                exists = true;
+                                TaskLog.warn("该任务正在执行，添加失败 {}", actionId);
+                                break;
+                            }
+                        }
+                    }
 
+                }
             }
+            break;
+
+            //手动触发:
+            case MANUAL: {
+                for (JobElement jobElement : masterContext.getManualQueue()) {
+                    if (ActionUtil.jobEquals(jobElement.getJobId(), actionId)) {
+                        exists = true;
+                        TaskLog.warn("手动任务队列已存在该任务，添加失败 {}", actionId);
+                    }
+                }
+                for (MasterWorkHolder workHolder : masterContext.getWorkMap().values()) {
+                    if (!exists) {
+                        for (Long aLong : workHolder.getManningRunning()) {
+                            if (Objects.equals(ActionUtil.getJobId(aLong.toString()), jobId)) {
+                                exists = true;
+                                TaskLog.warn("该任务正在执行，添加失败 {}", actionId);
+                                break;
+                            }
+                        }
+                    }
+
+                }
+            }
+            break;
+
+
         }
+
+
+//
         if (exists && !checkOnly) {
             heraJobHistory.getLog().append(LogConstant.CHECK_QUEUE_LOG);
             heraJobHistory.setStartTime(new Date());

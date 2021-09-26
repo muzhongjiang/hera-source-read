@@ -56,8 +56,10 @@ public class HeraGlobalEnv {
     private static Float systemMemUsed;
     @Getter
     private static Integer scanRate;
+
     @Getter
-    private static Integer connectPort;
+    private static Integer connectPort;//netty port
+
     @Getter
     private static String workDir;
     @Getter

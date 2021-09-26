@@ -14,8 +14,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 /**
- * @author xiaosuda
- * @date 2018/12/5
+ * 建议/留言接口
  */
 @Api("建议/留言接口")
 @Controller

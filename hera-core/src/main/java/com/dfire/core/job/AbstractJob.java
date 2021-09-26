@@ -124,7 +124,6 @@ public abstract class AbstractJob implements Job {
                 cmd.append("  2>&1|tee -a ${log_file} ");
                 break;
             default:
-                cmd.append("");
                 break;
         }
 

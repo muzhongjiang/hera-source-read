@@ -309,7 +309,10 @@ public class WorkClient {
      * @throws InterruptedException
      */
     public void executeJobFromWeb(ExecuteKind kind, Long id) throws ExecutionException, InterruptedException, TimeoutException {
-        RpcWebResponse.WebResponse response = WorkerHandleWebRequest.handleWebExecute(workContext, kind, id).get(HeraGlobalEnv.getRequestTimeout(), TimeUnit.SECONDS);
+        RpcWebResponse.WebResponse response = WorkerHandleWebRequest
+                .handleWebExecute(workContext, kind, id)
+                .get(HeraGlobalEnv.getRequestTimeout(), TimeUnit.SECONDS);// 阻塞直到取得异步操作结果
+
         if (response.getStatus() == ResponseStatus.Status.ERROR) {
             ErrorLog.error(response.getErrorText());
         }

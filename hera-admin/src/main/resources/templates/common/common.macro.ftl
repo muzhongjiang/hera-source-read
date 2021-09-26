@@ -110,17 +110,13 @@
                         <li class="" id="jobDetailMenu"><a href="${request.contextPath}/jobDetail"><i
                                         class="fa fa-circle-o"></i>任务详情</a>
                         </li>
-                        <li class="" id="jobDag"><a href="${request.contextPath}/jobDag"><i
-                                        class="fa fa-circle-o"></i>任务依赖</a></li>
+                        <li class="" id="jobDag"><a href="${request.contextPath}/jobDag"><i class="fa fa-circle-o"></i>任务依赖</a></li>
 
-                        <li class="" id="jobSearch"><a href="${request.contextPath}/jobSearch"><i
-                                        class="fa fa-circle-o"></i>任务搜索</a></li>
+                        <li class="" id="jobSearch"><a href="${request.contextPath}/jobSearch"><i class="fa fa-circle-o"></i>任务搜索</a></li>
 
-                        <li id="record"><a href="${request.contextPath}/record"><i
-                                        class="fa fa-circle-o"></i>日志记录</a></li>
+                        <li id="record"><a href="${request.contextPath}/record"><i class="fa fa-circle-o"></i>日志记录</a></li>
 
-                        <li id="rerun"><a href="${request.contextPath}/rerun"><i
-                                        class="fa fa-circle-o"></i>任务重跑</a></li>
+                        <li id="rerun"><a href="${request.contextPath}/rerun"><i class="fa fa-circle-o"></i>任务重跑</a></li>
                     </ul>
                 </li>
 

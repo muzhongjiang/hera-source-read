@@ -39,7 +39,7 @@ public interface HeraJobService {
      *
      * @return
      */
-    Map<String, List<HeraJobTreeNodeVo>> buildJobTree(String owner,Integer ssoId);
+    Map<String, List<HeraJobTreeNodeVo>> buildJobTree(String owner, Integer ssoId);
 
     boolean changeSwitch(Integer id, Integer status);
 
@@ -59,6 +59,9 @@ public interface HeraJobService {
 
     boolean changeParent(Integer newId, Integer parentId);
 
+    /**
+     * 是否允许任务重复执行
+     */
     boolean isRepeat(Integer jobId);
 
     Integer updateScript(Integer id, String script);

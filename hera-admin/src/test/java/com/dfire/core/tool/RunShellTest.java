@@ -11,12 +11,10 @@ public class RunShellTest {
 
     @Test
     public void runShell() throws IOException {
-
         RunShell shell = new RunShell("sh x.sh");
         shell.setDirectory("/Users/wyr/Desktop");
         shell.run();
 
         System.out.println(shell.getResult());
-
     }
 }

@@ -5,8 +5,6 @@ import com.dfire.common.entity.vo.HeraJobHistoryVo;
 import com.dfire.common.enums.TriggerTypeEnum;
 import lombok.Data;
 
-import java.util.Objects;
-
 /**
  * @author: <a href="mailto:lingxiao@2dfire.com">凌霄</a>
  * @time: Created in 下午4:11 2018/4/19
@@ -31,8 +29,11 @@ public class HeraJobFailedEvent extends ApplicationEvent {
     }
 
     public void setRollBackTime(int value) {
-        if (Objects.equals(triggerType, TriggerTypeEnum.SCHEDULE) || Objects.equals(triggerType, TriggerTypeEnum.MANUAL_RECOVER)) {
-            this.rollBackTime = value;
+        switch (triggerType) {
+            case SCHEDULE:
+            case MANUAL_RECOVER: {
+                this.rollBackTime = value;
+            }
         }
     }
 
